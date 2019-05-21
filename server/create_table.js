@@ -1,30 +1,9 @@
+
 const mysql = require('mysql')
-const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: ""
-})
-
-db.connect(function (err) {
-    if (err) console.error('error: ' + err.message);
-    db.query("CREATE DATABASE IF NOT EXISTS chic_chat", function (err, result) {
-        if (err) throw err;
-        console.log("Database created");
-    });
-    db.end(function (err) {
-        if (err) return console.log(err.message);
-    });
-});
-
-const connection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "chic_chat"
-})
+const config = require('./config')
+const connection = mysql.createConnection(config.db)
 connection.connect(function (err) {
     if (err) console.log(err)
-
     let createMember = "CREATE TABLE IF NOT EXISTS member (" +
         "id_user INT(11) AUTO_INCREMENT  PRIMARY KEY NOT NULL ," +
         "user VARCHAR(16) COLLATE utf8_unicode_ci NOT NULL," +
@@ -43,7 +22,7 @@ connection.connect(function (err) {
         " ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
 
     let createUserToken = "CREATE TABLE IF NOT EXISTS user_token (" +
-        "id_token int(11) NOT NULL," +
+        "id_token int(11) AUTO_INCREMENT PRIMARY KEY  NOT NULL ," +
         "user varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL," +
         "token text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL," +
         "PRIMARY KEY (`id_token`)" +

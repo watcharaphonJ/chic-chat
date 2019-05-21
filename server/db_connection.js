@@ -8,13 +8,9 @@ var multer = require('multer')
 var upload = multer({ dest: 'uploads/' })
 const bcrypt = require('bcrypt');
 const saltRounds = 0;
+const config = require('./config')
 
-const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: 'chic_chat'
-})
+const db = mysql.createConnection(config.db)
 db.connect()
 const app = express()
 var bodyParser = require('body-parser');
