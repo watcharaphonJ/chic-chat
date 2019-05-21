@@ -3,7 +3,16 @@ Express js
 MySQL  
 React js  
 
-# Back-end
+
+# Installation  
+
+## Database
+
+Create Database name chic_chat
+and
+Config server in config.js
+
+## Back-end
 ```
 > cd chic-chat\server
 > npm install  
@@ -14,7 +23,7 @@ React js
 
 
 
-# Front-end 
+## Front-end 
 ```
 > cd chic-chat\client  
 > npm install 
