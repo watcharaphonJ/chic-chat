@@ -8,7 +8,7 @@ React js
 > cd chic-chat\server
 > npm install  
 > npm install mysql  
-> node create_table.js  
+> node create_db.js  
 > node db_connection.js  
 ```
 
