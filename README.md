@@ -5,7 +5,7 @@ React js
 
 # Back-end
 ```
-> cd chic-chat\mysql-chic-chat   
+> cd chic-chat\server
 > npm install  
 > npm install mysql  
 > node create_table.js  
@@ -16,7 +16,7 @@ React js
 
 # Front-end 
 ```
-> cd chic-chat-v1\client  
+> cd chic-chat\client  
 > npm install 
 > npm start
 ```
