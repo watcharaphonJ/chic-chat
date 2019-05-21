@@ -19,8 +19,7 @@ Config server in config.js
 ```
 > cd chic-chat\server
 > npm install  
-> npm install mysql  
-> node create_db.js  
+> node create_table.js  
 > node db_connection.js  
 ```
 
