@@ -8,9 +8,12 @@ React js
 
 ## Database
 
-Create Database name chic_chat
-and
-Config server in config.js
+Create Database name chic_chat  
+'''
+> CREATE DATABASE IF NOT EXISTS chic_chat
+'''
+and  
+Config server in config.js  
 
 ## Back-end
 ```
