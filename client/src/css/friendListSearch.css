@@ -1,0 +1,40 @@
+
+.img-modal-search{
+    width: 200px;
+    height: auto;
+    border-radius: 4px;
+}
+.header-modal{
+    text-align: center;
+}
+.text-name-modal{
+    font-weight: bold;
+    font-size:20px;
+}
+.container-modal{
+    padding: 10px;
+}
+.styles_closeButton__20ID4{
+    display: none;
+}
+.text-user-modal{
+    margin-top: 20px;
+}
+.container-button-add-modal{
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+}
+.styles_modal__gNwvD{
+    min-width: 400px !important;
+}
+.cross-modal{
+    cursor: pointer;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    border: none;
+    padding: 0;
+    background-color: transparent;
+    display: flex;
+}

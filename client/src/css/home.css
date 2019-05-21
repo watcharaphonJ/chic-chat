@@ -1,0 +1,54 @@
+.container-home{
+    width: 80%;
+    display: inline-block;
+    padding-bottom: 50px;
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-top: 10px;
+    margin-left: 15%;
+}
+.img-result-search{
+    vertical-align: middle;
+    display: inline-block;
+    border-radius: 50%;
+    object-fit: cover;
+    width: 24px;
+    overflow: hidden;
+}
+.text-name-modal{
+    margin-top: 20px;
+}
+.card-result-search{
+    cursor: pointer;
+    
+    padding: 10px;
+    width: 100%;
+}
+.detail-result-search{
+    margin-left: 20px;
+    display: inline-block;
+    line-height: 40px;
+}
+.input-getFriend{
+    margin-top: 50px;
+    width: 446px;
+}
+.text-friend-list{
+    margin-top: 30px;
+    font-weight: 400;
+    margin-bottom: 30px;
+    font-size: 40px;
+}
+.container-result-search{
+    z-index: 99;
+    width: 446px;
+    background: white;
+    border-radius: 0px 0px 4px 4px;
+    position: fixed;
+    box-shadow: 0px 5px 10px -2px rgba(105,105,105,1);
+    
+}
+
+.card-result-search:hover{
+    background:#e9eeed;
+}

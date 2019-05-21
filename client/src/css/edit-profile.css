@@ -1,0 +1,11 @@
+.preview-image{
+    width: 200px;
+    height: auto;
+    display: inline-block;
+    margin-right: 20px;
+}
+.preview-img-reg{
+    margin-right: 40px;
+    max-width: 200px;
+    height: auto;
+}

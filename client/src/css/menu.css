@@ -1,0 +1,47 @@
+.container-menu{
+    background: #29504a;
+display: inline-block;
+    height: 100%;
+    color: white;
+    width: 15%;
+    position: fixed;
+    text-align: left;
+}
+.icon-exit{
+    margin-left: 10px;
+    font-size: 20px;
+    margin-top: 10px;
+}
+.text-logout{
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+.icon-menu{
+    font-size: 30px;
+}
+.text-edit:hover{
+    background: #38756c;
+
+}
+.text-edit{
+    height: 80px;
+    padding-left: 10px;
+    cursor: pointer;
+    transition: 0.5s background;
+    line-height: 80px;
+    text-align: center;
+}
+.img-menu{
+    border-radius: 50%;
+    height: 72px;
+    display: flex;
+    margin: auto;
+    width: 72px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    border: 2px solid #fff;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    color: #fff;
+}
