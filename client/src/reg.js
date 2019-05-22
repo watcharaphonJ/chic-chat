@@ -17,32 +17,43 @@ export default class reg extends Component {
         e.preventDefault()
         var password = e.target.password.value
         var cpassword = e.target.confirmPassword.value
+        var mobile = e.target.mobile.value
+        var citizen = e.target.citizen.value
 
         if (cpassword == password) {
             document.getElementById("error-password").innerHTML = ""
             URL = api_url + "/register"
-            console.log(URL)
             let formData = new FormData(e.target);
-            fetch(URL, {
-                method: "POST",
-                body: formData
-            })
-                .then(response => { return response.json() })
-                .then(data => {
-                    if (data.error) {
-                        document.getElementById("error-user").innerHTML = "User is already"
-                    } else {
-                        swal({
-                            title: "Register Success!",
-                            text: "Let's login to talk to your friend :)",
-                            icon: "success",
-                            button: "Success",
-                        }).then(() => {
-                            document.getElementById("error-user").innerHTML = ""
-                            window.location.href = '/'
-                        })
-                    }
-                });
+            if (mobile.length > 10) {
+                document.getElementById("error-mobile").innerHTML = "Mobile must have 10 digit number"
+            }
+            else if (citizen.length > 13) {
+                document.getElementById("error-citizen").innerHTML = "Citizen ID must have 13 digit number"
+
+            } else {
+                fetch(URL, {
+                    method: "POST",
+                    body: formData
+                })
+                    .then(response => { return response.json() })
+                    .then(data => {
+                        console.log(data)
+                        if (data.error) {
+                            document.getElementById("error-user").innerHTML = "User is already"
+                        } else {
+                            swal({
+                                title: "Register Success!",
+                                text: "Let's login to talk to your friend :)",
+                                icon: "success",
+                                button: "Success",
+                            }).then(() => {
+                                document.getElementById("error-user").innerHTML = ""
+                                window.location.href = '/'
+                            })
+                        }
+                    });
+            }
+
 
         } else {
             document.getElementById("error-password").innerHTML = "Password and confirm password does not match"
@@ -110,12 +121,14 @@ export default class reg extends Component {
                                 Mobile :
                             </div>
                             <input className="input-reg input" placeholder="MOBILE" type="text" name="mobile" required /><br />
+                            <div id="error-mobile" className="errorPassword"></div>
                         </div>
                         <div className="container-input-reg ">
                             <div className="style-inline">
                                 Citizen :
                             </div>
                             <input className="input-reg input" placeholder="CITIZEN" type="text" name="citizen" required /><br />
+                            <div id="error-citizen" className="errorPassword"></div>
                         </div>
                         <div className="container-input-reg ">
                             <div className="style-inline">

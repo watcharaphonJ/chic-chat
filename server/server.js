@@ -29,6 +29,7 @@ app.use("/uploads", express.static('uploads'))
 app.post('/check_token', function (req, res) {
     var token = req.body.token
     db.query("SELECT * FROM user_token WHERE token = ?", token, function (err, results, field) {
+        if (err) next(err)
         console.log(results)
         if (results.length == 1) {
             res.send({
@@ -46,6 +47,7 @@ app.post('/get_info', function (req, res) {
     var id = req.body.id
     console.log(id)
     db.query("SELECT * FROM member WHERE id_user = ? ", id, function (err, results, field) {
+        if (err) next(err)
         console.log(results)
         res.send({
             result: results[0]
@@ -58,7 +60,7 @@ app.post("/unfriend", function (req, res) {
 
     console.log(id)
     db.query("DELETE FROM friend_list WHERE id_user = ? and friend_id = ? ", id, function (err, result, field) {
-        if (err) console.log(err)
+        if (err) next(err)
         res.send({
             complete: true
         })
@@ -70,7 +72,7 @@ app.post("/unfriend", function (req, res) {
 app.post('/get-user', function (req, res) {
     var id = req.body.id_user
     db.query("SELECT * FROM member WHERE id_user = ?", id, function (err, results, field) {
-        console.log(err)
+        if (err) next(err)
         res.send({ result: results })
     })
 })
@@ -90,7 +92,7 @@ app.post('/edit-profile', upload.single('file'), function (req, res) {
         if (req.file == null) {
             var ArrData = [user, firstname, lastname, email, mobile, citizen, id]
             db.query("UPDATE member SET user = ?  ,firstname = ? ,lastname = ? ,email = ? , mobile = ? , citizen = ?  WHERE id_user =?", ArrData, function (err, results, field) {
-                if (err) console.log(err)
+                if (err) next(err)
                 console.log('Rows affected:', results.affectedRows);
                 res.send({
                     "success": true,
@@ -102,7 +104,7 @@ app.post('/edit-profile', upload.single('file'), function (req, res) {
             var image = req.file.filename
             var ArrData = [user, firstname, lastname, email, mobile, citizen, image, id]
             db.query("UPDATE member SET user = ? ,firstname = ? ,lastname = ? ,email = ? , mobile = ? , citizen = ? , img = ? WHERE id_user =?", ArrData, function (err, results, field) {
-                if (err) console.log(err)
+                if (err) next(err)
                 console.log('Rows affected:', results.affectedRows);
                 res.send({
                     "success": true,
@@ -116,7 +118,7 @@ app.post('/edit-profile', upload.single('file'), function (req, res) {
                 bcrypt.hash(password, salt, function (err, hash) {
                     var ArrData = [user, hash, firstname, lastname, email, mobile, citizen, id]
                     db.query("UPDATE member SET user = ? , password = ? ,firstname = ? ,lastname = ? ,email = ? , mobile = ? , citizen = ?  WHERE id_user =?", ArrData, function (err, results, field) {
-                        if (err) console.log(err)
+                        if (err) next(err)
                         console.log('Rows affected:', results.affectedRows);
                         res.send({
                             "success": true,
@@ -132,7 +134,7 @@ app.post('/edit-profile', upload.single('file'), function (req, res) {
                 bcrypt.hash(password, salt, function (err, hash) {
                     var ArrData = [user, hash, firstname, lastname, email, mobile, citizen, image, id]
                     db.query("UPDATE member SET user = ? , password = ? ,firstname = ? ,lastname = ? ,email = ? , mobile = ? , citizen = ? , img = ? WHERE id_user =?", ArrData, function (err, results, field) {
-                        if (err) console.log(err)
+                        if (err) next(err)
                         console.log('Rows affected:', results.affectedRows);
                         res.send({
                             "success": true,
@@ -161,8 +163,8 @@ app.post('/login', function (req, response) {
         token: token
     }
 
-    db.query("SELECT * FROM member WHERE user=?", user, function (error, results, fields) {
-        if (error) throw error;
+    db.query("SELECT * FROM member WHERE user=?", user, function (err, results, fields) {
+        if (err) next(err)
         if (results.length == 0) {
             response.send({
                 'error': true,
@@ -179,8 +181,8 @@ app.post('/login', function (req, response) {
 
                     if (res) {
                         console.log(results)
-                        db.query("INSERT INTO user_token SET ?", user_token, function (error, results, fields) {
-                            if (error) throw error;
+                        db.query("INSERT INTO user_token SET ?", user_token, function (err, results, fields) {
+                            if (err) next(err)
                             response.send({ 'error': false, 'token': toClient });
                         });
                     } else {
@@ -199,14 +201,14 @@ app.post("/add-friend", function (req, res) {
         friend_id: req.body.friend_id
     }
     db.query("INSERT INTO friend_list SET ?", data, function (err, results, field) {
-        if (err) return console.error(err.message)
+        if (err) next(err)
         return res.send({ complete: true })
     })
 })
 app.post('/get-all-friend', function (req, res) {
     var id = req.body.id_user
     db.query("SELECT member.* FROM friend_list INNER JOIN member ON member.id_user = friend_list.friend_id WHERE friend_list.id_user = ?  ", id, function (err, result, field) {
-        console.log(result)
+        if (err) next(err)
         result.map((data, i) => {
             if (data.id_user == id) {
                 result.splice(i, 1)
@@ -219,7 +221,7 @@ app.post('/get-all-friend', function (req, res) {
 app.post('/users', function (req, res) {
     var id = req.body.id_user
     db.query("SELECT * FROM member WHERE id_user NOT IN (SELECT friend_id FROM friend_list WHERE id_user = ?)", id, function (err, result, field) {
-        if (err) console.log(err)
+        if (err) next(err)
         result.map((data, i) => {
             if (data.id_user == id) {
                 result.splice(i, 1)
@@ -234,8 +236,7 @@ app.post('/signout', function (req, res) {
     var token = req.body
     console.log(token)
     db.query("DELETE FROM user_token WHERE token = ? ", token.token, function (err, result, fields) {
-        if (err)
-            return console.error(err.message);
+        if (err) next(err)
 
         console.log('Deleted Row(s):', result.affectedRows);
         res.send({
@@ -263,7 +264,7 @@ app.post('/search-friend', function (req, res) {
             + data + "%' OR mobile LIKE '"
             + data + "%' OR citizen LIKE '"
             + data + "%' ", function (err, result, fields) {
-                if (err) console.log(err)
+                if (err) next(err)
                 if (result.length == 0) {
                     res.send({
                         empty: true,
@@ -285,12 +286,13 @@ app.post('/search-friend', function (req, res) {
     }
 })
 
-app.post('/register', upload.single('file'), function (req, res) {
+app.post('/register', upload.single('file'), function (req, res, next) {
     const user = req.body.user;
     if (!user) {
         console.log("error")
     }
     db.query("SELECT user FROM member WHERE user = ?", user, function (err, results, fields) {
+        if (err) next(err)
         if (results.length == 0) {
             bcrypt.genSalt(saltRounds, function (err, salt) {
                 bcrypt.hash(req.body.password, salt, function (err, hash) {
@@ -306,7 +308,7 @@ app.post('/register', upload.single('file'), function (req, res) {
                         img: req.file.filename
                     }
                     db.query("INSERT INTO member SET ?", data, function (error, results, fields) {
-                        if (error) throw error;
+                        if (error) next(error);
                         res.send({
                             error: false,
                             data: results,
@@ -334,7 +336,7 @@ app.post('/register', upload.single('file'), function (req, res) {
                             img: req.file.filename
                         }
                         db.query("INSERT INTO member SET ?", data, function (error, results, fields) {
-                            if (error) throw error;
+                            if (error) next(error);
                             res.send({
                                 error: false,
                                 data: results,
@@ -349,6 +351,9 @@ app.post('/register', upload.single('file'), function (req, res) {
     })
 });
 
+app.use(function (err, req, res, next) {
+    res.status(500).json({ error: err.message })
+})
 app.listen('8888', () => {
     console.log('start port 8888')
 })

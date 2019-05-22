@@ -22,7 +22,7 @@ connection.connect(function (err) {
         " ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
 
     let createUserToken = "CREATE TABLE IF NOT EXISTS user_token (" +
-        "id_token int(11) AUTO_INCREMENT PRIMARY KEY  NOT NULL ," +
+        "id_token int(11) AUTO_INCREMENT NOT NULL ," +
         "user varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL," +
         "token text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL," +
         "PRIMARY KEY (`id_token`)" +
