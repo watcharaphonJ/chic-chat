@@ -20,7 +20,7 @@ Config server in config.js
 > cd chic-chat\server
 > npm install  
 > node create_table.js  
-> node db_connection.js  
+> node server.js  
 ```
 
 
