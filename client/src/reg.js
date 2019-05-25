@@ -27,31 +27,34 @@ export default class reg extends Component {
             if (mobile.length > 10) {
                 document.getElementById("error-mobile").innerHTML = "Mobile must have 10 digit number"
             }
-            else if (citizen.length > 13) {
-                document.getElementById("error-citizen").innerHTML = "Citizen ID must have 13 digit number"
-
-            } else {
-                fetch(URL, {
-                    method: "POST",
-                    body: formData
-                })
-                    .then(response => { return response.json() })
-                    .then(data => {
-                        console.log(data)
-                        if (data.error) {
-                            document.getElementById("error-user").innerHTML = "User is already"
-                        } else {
-                            swal({
-                                title: "Register Success!",
-                                text: "Let's login to talk to your friend :)",
-                                icon: "success",
-                                button: "Success",
-                            }).then(() => {
-                                document.getElementById("error-user").innerHTML = ""
-                                window.location.href = '/'
-                            })
-                        }
-                    });
+            else {
+                document.getElementById("error-mobile").innerHTML = ""
+                if (citizen.length > 13) {
+                    document.getElementById("error-citizen").innerHTML = "Citizen ID must have 13 digit number"
+                } else {
+                    document.getElementById("error-citizen").innerHTML = ""
+                    fetch(URL, {
+                        method: "POST",
+                        body: formData
+                    })
+                        .then(response => { return response.json() })
+                        .then(data => {
+                            console.log(data)
+                            if (data.error) {
+                                document.getElementById("error-user").innerHTML = "User is already"
+                            } else {
+                                swal({
+                                    title: "Register Success!",
+                                    text: "Let's login to talk to your friend :)",
+                                    icon: "success",
+                                    button: "Success",
+                                }).then(() => {
+                                    document.getElementById("error-user").innerHTML = ""
+                                    window.location.href = '/'
+                                })
+                            }
+                        });
+                }
             }
 
 

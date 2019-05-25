@@ -18,7 +18,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors())
 app.use("/uploads", express.static('uploads'))
-app.post('/check_token', function (req, res) {
+app.post('/check_token', function (req, res, next) {
     var token = req.body.token
     db.query("SELECT * FROM user_token WHERE token = ?", token, function (err, results, field) {
         if (err) next(err)
