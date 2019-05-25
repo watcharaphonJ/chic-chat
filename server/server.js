@@ -17,14 +17,6 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors())
-app.use(function (req, res, next) {
-    var token = req.headers.token
-    console.log(token)
-    // bcrypt.compare(myPlaintextPassword, hash, function (err, res) {
-    //     // res == true
-    // });
-    next()
-})
 app.use("/uploads", express.static('uploads'))
 app.post('/check_token', function (req, res) {
     var token = req.body.token
@@ -43,7 +35,7 @@ app.post('/check_token', function (req, res) {
     })
 })
 
-app.post('/get_info', function (req, res) {
+app.post('/get_info', function (req, res, next) {
     var id = req.body.id
     console.log(id)
     db.query("SELECT * FROM member WHERE id_user = ? ", id, function (err, results, field) {
@@ -54,7 +46,7 @@ app.post('/get_info', function (req, res) {
         })
     })
 })
-app.post("/unfriend", function (req, res) {
+app.post("/unfriend", function (req, res, next) {
     var data = req.body
     var id = [parseInt(data.id_user), data.friend_id]
 
@@ -69,14 +61,14 @@ app.post("/unfriend", function (req, res) {
 
 })
 
-app.post('/get-user', function (req, res) {
+app.post('/get-user', function (req, res, next) {
     var id = req.body.id_user
     db.query("SELECT * FROM member WHERE id_user = ?", id, function (err, results, field) {
         if (err) next(err)
         res.send({ result: results })
     })
 })
-app.post('/edit-profile', upload.single('file'), function (req, res) {
+app.post('/edit-profile', upload.single('file'), function (req, res, next) {
 
     var info = req.body
     var user = info.user
@@ -146,7 +138,7 @@ app.post('/edit-profile', upload.single('file'), function (req, res) {
         }
     }
 })
-app.post('/login', function (req, response) {
+app.post('/login', function (req, response, next) {
     var user = req.body.user
     var password = req.body.password
     var jwt = require('jsonwebtoken');
@@ -195,7 +187,7 @@ app.post('/login', function (req, response) {
     });
 })
 
-app.post("/add-friend", function (req, res) {
+app.post("/add-friend", function (req, res, next) {
     var data = {
         id_user: req.body.id_user,
         friend_id: req.body.friend_id
@@ -205,7 +197,7 @@ app.post("/add-friend", function (req, res) {
         return res.send({ complete: true })
     })
 })
-app.post('/get-all-friend', function (req, res) {
+app.post('/get-all-friend', function (req, res, next) {
     var id = req.body.id_user
     db.query("SELECT member.* FROM friend_list INNER JOIN member ON member.id_user = friend_list.friend_id WHERE friend_list.id_user = ?  ", id, function (err, result, field) {
         if (err) next(err)
@@ -218,7 +210,7 @@ app.post('/get-all-friend', function (req, res) {
     })
 
 })
-app.post('/users', function (req, res) {
+app.post('/users', function (req, res, next) {
     var id = req.body.id_user
     db.query("SELECT * FROM member WHERE id_user NOT IN (SELECT friend_id FROM friend_list WHERE id_user = ?)", id, function (err, result, field) {
         if (err) next(err)
@@ -232,7 +224,7 @@ app.post('/users', function (req, res) {
     })
 
 })
-app.post('/signout', function (req, res) {
+app.post('/signout', function (req, res, next) {
     var token = req.body
     console.log(token)
     db.query("DELETE FROM user_token WHERE token = ? ", token.token, function (err, result, fields) {
@@ -246,7 +238,7 @@ app.post('/signout', function (req, res) {
     })
 })
 
-app.post('/search-friend', function (req, res) {
+app.post('/search-friend', function (req, res, next) {
     console.log("test")
     var data = req.body.data
     var id = req.body.id
