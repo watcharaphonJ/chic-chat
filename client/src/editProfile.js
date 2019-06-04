@@ -110,6 +110,7 @@ export default class editProfile extends Component {
                     <div className="padding-reg">
                         <div className="container-reg">
                             <div className="text-register ">
+
                                 Edit Profile
                             </div>
                             <form className="form-reg" method="post" enctype="multipart/form-data" onSubmit={this.edit_profile}>

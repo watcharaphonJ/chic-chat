@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import './css/login.css'
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+const RECAPTCHA_KEY = process.env.REACT_APP_RECAPTCHA_KEY;
 const api_url = process.env.REACT_APP_API_URL
 
 function press_enter() {
@@ -17,32 +19,46 @@ function press_enter() {
     });
 
 }
+var lat, lng
+
+var options = {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0
+};
 export default class login extends Component {
 
     constructor(props) {
         super(props)
-        this.state = { counter: 0, haveToken: false };
+        const counterTry = localStorage.getItem("try") || 0;
+        this.state = { showCapcha: counterTry < 3, haveToken: false };
     }
+
 
     checkLogin = (e) => {
         e.preventDefault()
         var user = e.target.user.value
         var password = e.target.password.value
-        if (!user == "" & password == "") {
-            document.getElementById("error-login").innerHTML = "Please enter your password"
+        var capcha = e.target["g-recaptcha-response"].value
+        const { lat, lng } = this.state
+        var { showCapcha } = this.state
+        var today = new Date();
+        var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate()
+            + today.getHours() + '-' + (today.getMinutes() + 1) + '-' + today.getSeconds();
+
+        URL = api_url + "/login"
+        var data = {
+            user: user,
+            password: password,
+            capcha: capcha,
+            lat: lat,
+            lng, lng
         }
-        else if (user == "" & !password == "") {
-            document.getElementById("error-login").innerHTML = "Please enter your user"
-        }
-        else if (user == "" & password == "") {
-            document.getElementById("error-login").innerHTML = "Please enter your user and password"
+        console.log(data)
+        if (!showCapcha && !capcha) {
+            alert('reCAPTCHA is required');
         }
         else {
-            URL = api_url + "/login"
-            var data = {
-                user: user,
-                password: password
-            }
             fetch(URL, {
                 method: "POST",
                 headers: {
@@ -57,20 +73,53 @@ export default class login extends Component {
                         console.log(data)
                         localStorage.setItem('token', data.token.token);
                         localStorage.setItem('id', data.token.id_user);
+                        localStorage.removeItem("try");
                         window.location.href = "/home"
                     } else {
+                        let counterTry = parseInt(localStorage.getItem("try") ? localStorage.getItem("try") : 0) + 1;
+                        console.log(counterTry)
+                        localStorage.setItem("try", counterTry);
+
                         var message = data.message
-                        console.log(message)
                         document.getElementById("error-login").innerHTML = message
+                        if (counterTry < 3) {
+                            this.setState({ showCapcha: true });
+                            window.grecaptcha.reset();
+                        } else {
+                            console.log(showCapcha)
+                            this.setState({ showCapcha: false });
+
+                        }
 
                     }
                 });
         }
+
     }
     goRegister = () => {
         window.location.href = "/reg"
     }
+
+    success = (pos) => {
+        var crd = pos.coords;
+
+        this.setState({
+
+            lat: crd.latitude
+            ,
+            lng: crd.longitude
+
+        })
+        console.log('More or less ${crd.accuracy} meters');
+        console.log('More or less ${crd.accuracy} meters');
+        console.log('More or less ${crd.accuracy} meters');
+    }
+
+    error = (err) => {
+        console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
     componentWillMount = () => {
+        navigator.geolocation.getCurrentPosition(this.success, this.error, options);
         var token = window.localStorage.getItem("token")
         var data = {
             token: token
@@ -85,51 +134,60 @@ export default class login extends Component {
                 body: JSON.stringify(data)
             }).then(response => response.json()
                 .then(data => {
+                    console.log(data)
                     this.setState({
                         haveToken: true
                     })
                 }))
         }
     }
+    onChange = (value) => {
+        console.log("Captcha value:", value);
+    }
+    forgetPassword = () => {
+        console.log("test")
+    }
+    componentDidMount() {
+        const script = document.createElement('script')
+        script.src = 'https://www.google.com/recaptcha/api.js';
+        document.body.appendChild(script);
+    }
     render() {
-        // window.localStorage.removeItem("id")
-        // window.localStorage.removeItem("token")
-        var { haveToken } = this.state
+        var { haveToken, showCapcha } = this.state
+        console.log(showCapcha)
         if (haveToken) {
-            this.props.history.push("/home")
+            return this.props.history.push("/home")
         } else {
             return (<div className="padding-center">
+
                 <div className="container-login">
                     <div className="text-chic-chat">
                         Chic Chat</div>
                     <form className="form-login" onSubmit={this.checkLogin}>
                         <input className="inputLogin input" placeholder="USERNAME" type="text" name="user" /><br />
-                        <input className="inputLogin input" placeholder="PASSWORD" type="password" name="password" /><br />
+                        <input className="inputLogin inputLoginPassword input" placeholder="PASSWORD" type="password" name="password" /><br />
+
                         <div className="errorLogin" id="error-login"></div>
+
+
                         <div className="container-submit">
-                            <div className="buttonRegister" onClick={this.goRegister}>Register</div>
-                            <input className="button is-primary" type="submit" value="Login"></input>
+                            <input id="loginBT" className="buttonLogin button is-primary" type="submit" value="Login"></input>
                         </div>
+                        <div className="text-register-forget">
+
+                            <div className="buttonRegister" onClick={this.goRegister}>Register</div>
+                            <Link to={"/forgetPassword"} className="buttonRegister text-forgetpassword" onClick={this.forgetPassword}>Forget Password</Link>
+                        </div>
+                        <div
+                            hidden={showCapcha}
+                            class="g-recaptcha"
+                            data-sitekey={RECAPTCHA_KEY}>
+                        </div>
+
                     </form>
                 </div>
             </div>)
         }
-        return (
-            <div className="padding-center">
-                <div className="container-login">
-                    <div className="text-chic-chat">
-                        Chic Chat</div>
-                    <form className="form-login" onSubmit={this.checkLogin}>
-                        <input id="password" className="inputLogin input" placeholder="USERNAME" type="text" name="user" /><br />
-                        <input id="password" className="inputLogin input" placeholder="PASSWORD" type="password" name="password" /><br />
-                        <div className="errorLogin" id="error-login"></div>
-                        <div className="container-submit">
-                            <div className="buttonRegister" onClick={this.goRegister}>Register</div>
-                            <input id="button-submit" className="button is-primary" type="submit" value="Login"></input>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        )
+
     }
 }

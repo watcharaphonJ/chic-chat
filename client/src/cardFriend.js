@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import './css/CardFriendList.css'
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import swal from 'sweetalert';
 const API_URL = process.env.REACT_APP_API_URL
 
@@ -46,7 +47,7 @@ export default class cardFriend extends Component {
 
     }
     render() {
-        console.log(this.props.data)
+        console.log(this.props)
         var name = this.props.data.firstname + " " + this.props.data.lastname
         var img = this.props.data.img
         return (
@@ -57,7 +58,8 @@ export default class cardFriend extends Component {
                         {name}</div>
                 </div>
                 <div className="button-right">
-                    <a class="button is-primary is-outlined btChat" onClick={this.addFriend}>CHAT</a>
+                    <Link to={"/chat/?id_user=" + this.props.data.id_user} className="button is-primary is-outlined btChat" >CHAT</Link>
+
                     <a class="button is-danger is-outlined btUnFriend" onClick={this.unFriend}>UNFRIEND</a>
                 </div>
             </div>

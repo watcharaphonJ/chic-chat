@@ -41,7 +41,7 @@ export default class reg extends Component {
                         .then(data => {
                             console.log(data)
                             if (data.error) {
-                                document.getElementById("error-user").innerHTML = "User is already"
+                                alert(data.message)
                             } else {
                                 swal({
                                     title: "Register Success!",

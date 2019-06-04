@@ -5,9 +5,22 @@
     text-align: center;
     margin-top: 100px;
 }
+.g-recaptcha > div { margin: auto; }
 .errorLogin{
     color: red;
     margin-bottom: 20px;
+}
+.inputLoginPassword{
+    margin-bottom: 10px !important;
+}
+.text-register-forget{
+    text-align: center;
+    margin-bottom: 30px;
+}
+.text-forgetpassword{
+    color: black;
+margin-left: 40px;
+    margin-right: 0px !important;
 }
 .text-chic-chat{
     margin-top: 20px;
@@ -16,27 +29,36 @@
 }
 .padding-center{
     height: 100%;
-    width: 300px;
+    width: 400px;
     margin: auto;
 }
 .form-login{
     margin-top: 40px;
 }
 .container-submit{
+    text-align: right;
     margin: auto;
     margin-bottom: 20px;
-    width: 200px;
+    width: 220px;
 }
+.buttonLogin{
+    width: 100px;
+}
+
 .buttonRegister{
     cursor: pointer;
     font-size: 14px;
     margin-right: 30px;
     display: inline-block;
+    transition: color 0.2s;
+}
+.buttonRegister:hover{
+    color: #019e87;
 }
 .inputLogin{
     margin-bottom: 30px;
     display: inline-block;
-    width: 150px;
+    width: 220px;
     font-size: 12px;
 
 }

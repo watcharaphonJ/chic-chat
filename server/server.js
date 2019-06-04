@@ -7,8 +7,20 @@ var bodyParser = require('body-parser')
 var multer = require('multer')
 var upload = multer({ dest: 'uploads/' })
 const bcrypt = require('bcrypt');
-const saltRounds = 0;
+var request = require('request-promise');
+var http = require('http');
 const config = require('./config')
+const saltRounds = 0;
+const nodemailer = require('nodemailer');
+var jwt = require('jsonwebtoken');
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: config.emailPassword.email, // your email
+        pass: config.emailPassword.password // your email password
+    }
+});
 
 const db = mysql.createConnection(config.db)
 db.connect()
@@ -18,6 +30,13 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors())
 app.use("/uploads", express.static('uploads'))
+app.enable('trust proxy');
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+    next();
+});
 app.post('/check_token', function (req, res, next) {
     var token = req.body.token
     db.query("SELECT * FROM user_token WHERE token = ?", token, function (err, results, field) {
@@ -138,52 +157,102 @@ app.post('/edit-profile', upload.single('file'), function (req, res, next) {
         }
     }
 })
+
+
 app.post('/login', function (req, response, next) {
     var user = req.body.user
     var password = req.body.password
-    var jwt = require('jsonwebtoken');
-    var token = jwt.sign({
-        exp: Math.floor(Date.now() / 1000) + (60 * 60),
-        data: data
-    }, 'secret');
+    var res = req.body.capcha
+    var secretekey = config.recaptcha.secret
+
     var data = {
         user: user,
         password: password
     }
+
+    var token = jwt.sign({
+        exp: Math.floor(Date.now() / 1000) + (60 * 60),
+        data: data
+    }, 'secret');
     var user_token = {
         user: user,
         token: token
     }
-
+    var options = {
+        method: 'POST',
+        uri: 'https://www.google.com/recaptcha/api/siteverify',
+        form: {
+            secret: secretekey,
+            response: res,
+        },
+        json: true // Automatically stringifies the body to JSON
+    };
+    if (res) {
+        request(options)
+            .then((resp) => {
+                if (!resp.success) {
+                    return response.send({ err: resp.error - codes })
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+    }
     db.query("SELECT * FROM member WHERE user=?", user, function (err, results, fields) {
         if (err) next(err)
         if (results.length == 0) {
-            response.send({
+            return response.send({
                 'error': true,
                 'message': "User is not found"
             })
         } else {
-            console.log(results)
             if (user == results[0].user) {
                 var toClient = {
                     id_user: results[0].id_user,
                     token: token
                 }
                 bcrypt.compare(req.body.password, results[0].password, function (err, res) {
-
                     if (res) {
-                        console.log(results)
-                        db.query("INSERT INTO user_token SET ?", user_token, function (err, results, fields) {
+                        db.query("INSERT INTO user_token SET ?", user_token, function (err, result, fields) {
                             if (err) next(err)
-                            response.send({ 'error': false, 'token': toClient });
+                            var logError = {
+                                id_user: results[0].id_user,
+                                log_info: "success",
+                                lat: req.body.lat,
+                                lng: req.body.lng
+                            }
+                            console.log(logError)
+                            db.query("INSERT INTO log_error SET ?", logError, function (err, result, field) {
+                                if (err) next(err)
+                                return response.send({ 'error': false, 'token': toClient });
+                            })
                         });
                     } else {
-                        response.send({ 'error': true, 'token': token, 'message': "User or password are wrong" });
+                        var logError = {
+                            id_user: results[0].id_user,
+                            log_info: "Failed : Wrong password",
+                            lat: req.body.lat,
+                            lng: req.body.lng
+                        }
+                        db.query("INSERT INTO log_error SET ?", logError, function (err, result, field) {
+                            if (err) next(err)
+                            return response.send({ 'error': true, 'message': "password are wrong" });
+                        })
                     }
                 });
+            } else {
+                var logError = {
+                    id_user: results[0].id_user,
+                    log_info: "Failed : Wrong user",
+                    lat: req.body.lat,
+                    lng: req.body.lng
+                }
+                db.query("INSERT INTO log_error SET ?", logError, function (err, result, field) {
+                    if (err) next(err)
+                    return response.send({ 'error': true, 'token': token, 'message': "User are wrong" });
+                })
             }
         }
-
     });
 })
 
@@ -277,14 +346,87 @@ app.post('/search-friend', function (req, res, next) {
             })
     }
 })
+app.post('/reset', function (req, res, next) {
+    var email = req.body.email
+
+    db.query("SELECT email FROM member WHERE email = ?", email, function (err, result, field) {
+        if (result.length == 0) {
+            res.send({
+                complete: true, message: "This email not in database"
+            })
+        } else {
+            var token = jwt.sign({
+                exp: Math.floor(Date.now() / 1000) + (60 * 60),
+                data: email
+            }, 'secret');
+
+            let mailOptions = {
+                from: config.emailPassword.email,                // sender
+                to: email,                // list of receivers
+                subject: 'Reset Password',              // Mail subject
+                html: '<a href="http://localhost:3000/set-password/?token=' + token + '">Link reset password </a>'
+            };
+            transporter.sendMail(mailOptions, function (err, info) {
+                if (err) next(err)
+
+                else {
+                    console.log(info)
+                    const data = {
+                        email: email,
+                        token: token
+                    }
+                    db.query("INSERT INTO token_reset_password SET ?", data, function (err, result, field) {
+                        if (err) next(err)
+                        res.send({
+                            complete: true, message: ""
+                        })
+                    })
+                }
+            });
+
+        }
+    })
+})
+app.post('/setNewPassword', function (req, res, next) {
+
+    var token = req.body.data.token
+    var password = req.body.data.password
+
+    db.query("SELECT email FROM token_reset_password WHERE token = ?", token, function (err, result, field) {
+        if (err) next(err)
+        var email = result[0].email
+        bcrypt.genSalt(saltRounds, function (err, salt) {
+            bcrypt.hash(password, salt, function (err, hash) {
+                var ArrData = [hash, email]
+                console.log(ArrData)
+
+                db.query("UPDATE member SET password = ? WHERE email =?", ArrData, function (err, results, field) {
+                    if (err) next(err)
+                    else {
+                        console.log("update password success");
+                        res.send({
+                            "success": true,
+                            "message": "Update to database complete"
+                        })
+                    }
+                })
+
+            });
+        });
+    })
+})
 
 app.post('/register', upload.single('file'), function (req, res, next) {
     const user = req.body.user;
+    const email = req.body.email
+    const data = [user, email]
     if (!user) {
         console.log("error")
     }
-    db.query("SELECT user FROM member WHERE user = ?", user, function (err, results, fields) {
+    db.query("SELECT * FROM member WHERE user = ? or email = ?", data, function (err, results, fields) {
         if (err) next(err)
+        console.log(results)
+        console.log(req.body.email)
         if (results.length == 0) {
             bcrypt.genSalt(saltRounds, function (err, salt) {
                 bcrypt.hash(req.body.password, salt, function (err, hash) {
@@ -312,33 +454,37 @@ app.post('/register', upload.single('file'), function (req, res, next) {
             });
         } else {
             if (results[0].user == req.body.user) {
-                res.send({ error: true, message: 'User id already' });
-            } else {
-                bcrypt.genSalt(saltRounds, function (err, salt) {
-                    bcrypt.hash(req.body.password, salt, function (err, hash) {
-
-                        const data = {
-                            user: req.body.user,
-                            password: hash,
-                            firstname: req.body.firstname,
-                            lastname: req.body.lastname,
-                            email: req.body.email,
-                            mobile: req.body.mobile,
-                            citizen: req.body.citizen,
-                            img: req.file.filename
-                        }
-                        db.query("INSERT INTO member SET ?", data, function (error, results, fields) {
-                            if (error) next(error);
-                            res.send({
-                                error: false,
-                                data: results,
-                                message: 'New user has been created successfully.'
-                            });
-                        });
-
-                    });
-                });
+                return res.send({ error: true, message: 'User is already' });
             }
+            if (results[0].email == req.body.email) {
+                return res.send({ error: true, message: 'Email is already' });
+            }
+
+            bcrypt.genSalt(saltRounds, function (err, salt) {
+                bcrypt.hash(req.body.password, salt, function (err, hash) {
+
+                    const data = {
+                        user: req.body.user,
+                        password: hash,
+                        firstname: req.body.firstname,
+                        lastname: req.body.lastname,
+                        email: req.body.email,
+                        mobile: req.body.mobile,
+                        citizen: req.body.citizen,
+                        img: req.file.filename
+                    }
+                    db.query("INSERT INTO member SET ?", data, function (error, results, fields) {
+                        if (error) next(error);
+                        res.send({
+                            error: false,
+                            data: results,
+                            message: 'New user has been created successfully.'
+                        });
+                    });
+
+                });
+            });
+
         }
     })
 });
@@ -346,7 +492,22 @@ app.post('/register', upload.single('file'), function (req, res, next) {
 app.use(function (err, req, res, next) {
     res.status(500).json({ error: err.message })
 })
-app.listen('8888', () => {
-    console.log('start port 8888')
+const server = http.createServer(app);
+const io = require('socket.io')(server);
+
+// รอการ connect จาก client
+io.on('connection', client => {
+    console.log('user connected')
+
+    // เมื่อ Client ตัดการเชื่อมต่อ
+    client.on('disconnect', () => {
+        console.log('user disconnected')
+    })
+
+    // ส่งข้อมูลไปยัง Client ทุกตัวที่เขื่อมต่อแบบ Realtime
+    client.on('sent-message', function (message) {
+        io.sockets.emit('new-message', message)
+    })
 })
+server.listen(8888, "0.0.0.0");
 module.exports = app;

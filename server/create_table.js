@@ -4,6 +4,11 @@ const config = require('./config')
 const connection = mysql.createConnection(config.db)
 connection.connect(function (err) {
     if (err) console.log(err)
+    let createTokenResetPassword = "CREATE TABLE IF NOT EXISTS token_reset_password (" +
+        "id_token int(11) AUTO_INCREMENT PRIMARY KEY  NOT NULL," +
+        "email text NOT NULL," +
+        "token text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  NOT NULL)" +
+        "ENGINE = InnoDB AUTO_INCREMENT = 26 DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci"
     let createMember = "CREATE TABLE IF NOT EXISTS member (" +
         "id_user INT(11) AUTO_INCREMENT  PRIMARY KEY NOT NULL ," +
         "user VARCHAR(16) COLLATE utf8_unicode_ci NOT NULL," +
@@ -29,6 +34,10 @@ connection.connect(function (err) {
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
 
     connection.query(createMember, function (err, results, fields) {
+        if (err) console.log(err);
+        console.log(results)
+    });
+    connection.query(createTokenResetPassword, function (err, results, fields) {
         if (err) console.log(err);
         console.log(results)
     });
