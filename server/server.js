@@ -190,8 +190,9 @@ app.post('/login', function (req, response, next) {
     if (res) {
         request(options)
             .then((resp) => {
+                console.log(resp)
                 if (!resp.success) {
-                    return response.send({ err: resp.error - codes })
+                    response.send({ err: "err" })
                 }
             })
             .catch((err) => {
@@ -201,7 +202,7 @@ app.post('/login', function (req, response, next) {
     db.query("SELECT * FROM member WHERE user=?", user, function (err, results, fields) {
         if (err) next(err)
         if (results.length == 0) {
-            return response.send({
+            response.send({
                 'error': true,
                 'message': "User is not found"
             })
@@ -224,7 +225,7 @@ app.post('/login', function (req, response, next) {
                             console.log(logError)
                             db.query("INSERT INTO log_error SET ?", logError, function (err, result, field) {
                                 if (err) next(err)
-                                return response.send({ 'error': false, 'token': toClient });
+                                response.send({ 'error': false, 'token': toClient });
                             })
                         });
                     } else {
@@ -236,7 +237,7 @@ app.post('/login', function (req, response, next) {
                         }
                         db.query("INSERT INTO log_error SET ?", logError, function (err, result, field) {
                             if (err) next(err)
-                            return response.send({ 'error': true, 'message': "password are wrong" });
+                            response.send({ 'error': true, 'message': "password are wrong" });
                         })
                     }
                 });
@@ -249,7 +250,7 @@ app.post('/login', function (req, response, next) {
                 }
                 db.query("INSERT INTO log_error SET ?", logError, function (err, result, field) {
                     if (err) next(err)
-                    return response.send({ 'error': true, 'token': token, 'message': "User are wrong" });
+                    response.send({ 'error': true, 'token': token, 'message': "User are wrong" });
                 })
             }
         }
