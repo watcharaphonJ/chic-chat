@@ -416,6 +416,46 @@ app.post('/setNewPassword', function (req, res, next) {
         });
     })
 })
+app.post("/get_history", function (req, res, next) {
+    console.log(req.body)
+
+    var chat_id = req.body.chat_id
+
+    db.query("SELECT * FROM chat_history WHERE chat_id = ? ",
+        chat_id, function (err, result, field) {
+            if (err) console.log(err)
+            res.send(result)
+            console.log(result)
+        })
+})
+
+app.post("/save_message", function (req, res, next) {
+    var body = req.body
+    db.query("INSERT INTO chat_history SET ? ", body, function (err, result, field) {
+        if (err) console.log(err)
+        console.log(result)
+    })
+})
+app.post('/create_chat', function (req, res, next) {
+
+    var body = req.body
+
+    var data = [body.id_user, body.friend_id]
+    console.log(data)
+    db.query("SELECT * FROM id_chat WHERE id_user = ? and friend_id = ?", data, function (err, result, field) {
+        if (err) console.log(err.message)
+        console.log(result.length)
+        if (result.length > 0) {
+            console.log(result[0].id_chat)
+            res.send({ id_chat: result[0].id_chat })
+        } else {
+            db.query("INSERT INTO id_chat SET ? ", body, function (err, results, field) {
+                console.log(results)
+                res.send({ id_chat: results.insertId })
+            })
+        }
+    })
+})
 
 app.post('/register', upload.single('file'), function (req, res, next) {
     const user = req.body.user;
@@ -507,7 +547,19 @@ io.on('connection', client => {
 
     // ส่งข้อมูลไปยัง Client ทุกตัวที่เขื่อมต่อแบบ Realtime
     client.on('sent-message', function (message) {
-        io.sockets.emit('new-message', message)
+        console.log(message)
+        db.query("INSERT INTO chat_history SET ? ", message, function (err, result, field) {
+            if (err) console.log(err)
+            var chat_id = message.chat_id
+
+
+            db.query("SELECT * FROM chat_history WHERE chat_id = ? ",
+                chat_id, function (err, result, field) {
+                    if (err) console.log(err)
+                    io.sockets.emit('new-message', result)
+                })
+
+        })
     })
 })
 server.listen(8888, "0.0.0.0");

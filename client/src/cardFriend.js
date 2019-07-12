@@ -58,7 +58,8 @@ export default class cardFriend extends Component {
                         {name}</div>
                 </div>
                 <div className="button-right">
-                    <Link to={"/chat/?id_user=" + this.props.data.id_user} className="button is-primary is-outlined btChat" >CHAT</Link>
+                    <Link to={"/chat/?id_user=" + this.props.data.id_user
+                } className="button is-primary is-outlined btChat" >CHAT</Link>
 
                     <a class="button is-danger is-outlined btUnFriend" onClick={this.unFriend}>UNFRIEND</a>
                 </div>
